@@ -1,7 +1,0 @@
-[gd_scene load_steps=2 format=2]
-
-[ext_resource path="res://Ship.gd" type="Script" id=1]
-
-[node name="Ship" type="Polygon2D"]
-polygon = PoolVector2Array( 8, 0, -8.75, -8, -4, -0.25, -8.5, 6.25 )
-script = ExtResource( 1 )
