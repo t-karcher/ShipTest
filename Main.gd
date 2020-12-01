@@ -21,7 +21,7 @@ func _ready():
 		
 		var item = VisualServer.canvas_item_create()
 		VisualServer.canvas_item_set_parent(item, get_canvas_item())
-		VisualServer.canvas_item_add_texture_rect (item, Rect2(sprite.get_size() / 2, sprite.get_size()), sprite)
+		VisualServer.canvas_item_add_texture_rect (item, Rect2(-sprite.get_size() / 2, sprite.get_size()), sprite)
 
 		ship_canvas_item.append(item)
 
