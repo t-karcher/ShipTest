@@ -1,6 +1,79 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://Main.gd" type="Script" id=1]
+[ext_resource path="res://ship.png" type="Texture" id=2]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type particles;
+
+const float PI = 3.14159265358979323846;
+
+uniform vec2 target = vec2(0.0, 0.0);
+uniform float speed = 150.0;
+
+float rand_from_seed(in uint seed) {
+  int k;
+  int s = int(seed);
+  if (s == 0)
+    s = 305420679;
+  k = s / 127773;
+  s = 16807 * (s - k * 127773) - 2836 * k;
+  if (s < 0)
+    s += 2147483647;
+  seed = uint(s);
+  return float(seed % uint(65536)) / 65535.0;
+}
+
+uint hash(uint x) {
+  x = ((x >> uint(16)) ^ x) * uint(73244475);
+  x = ((x >> uint(16)) ^ x) * uint(73244475);
+  x = (x >> uint(16)) ^ x;
+  return x;
+}
+
+mat2 rotate(float a) {
+  float s = sin(-a);
+  float c = cos(a);
+  return mat2(vec2(c, -s), vec2(s, c));
+}
+
+float short_angle_dist (float from, float to) {
+	float diff = mod(to - from, 2.0 * PI);
+	return mod (2.0 * diff, 2.0 * PI) - diff;
+}
+
+float mix_angle(float from, float to, float weight) {
+  return from + short_angle_dist(from, to) * weight;
+}
+
+void vertex() {
+  if (RESTART) {
+    uint alt_seed1 = hash(NUMBER + uint(1) + RANDOM_SEED);
+    uint alt_seed2 = hash(NUMBER + uint(27) + RANDOM_SEED);
+    uint alt_seed3 = hash(NUMBER + uint(43) + RANDOM_SEED);
+    uint alt_seed4 = hash(NUMBER + uint(111) + RANDOM_SEED);
+    CUSTOM.x = rand_from_seed(alt_seed1) * 2.0 * PI; // initial angle
+    CUSTOM.y = rand_from_seed(alt_seed2) * 30.0 - 15.0; // random speed modifier
+    CUSTOM.z = 0.2 + rand_from_seed(alt_seed3) * 1.8; // random proximity
+    mat2 r = rotate(CUSTOM.x);
+    TRANSFORM[0].xy = vec2(r[0]);
+    TRANSFORM[1].xy = vec2(r[1]);
+    TRANSFORM[3].xy = target;
+ } else {
+    float a = target.x - TRANSFORM[3].x;
+	float b = target.y - TRANSFORM[3].y;	
+	CUSTOM.x = mix_angle(CUSTOM.x , atan(b, a) , CUSTOM.z * DELTA);
+	mat2 r = rotate(CUSTOM.x);
+    TRANSFORM[0].xy = vec2(r[0]);
+    TRANSFORM[1].xy = vec2(r[1]);
+	TRANSFORM[3].xy += vec2((speed + CUSTOM.y) * DELTA * cos(CUSTOM.x), (speed + CUSTOM.y) * DELTA * sin(CUSTOM.x));
+  }
+}"
+
+[sub_resource type="ShaderMaterial" id=2]
+shader = SubResource( 1 )
+shader_param/target = Vector2( 0, 0 )
+shader_param/speed = 150.0
 
 [node name="ShipTest" type="Node2D"]
 script = ExtResource( 1 )
@@ -9,3 +82,11 @@ script = ExtResource( 1 )
 position = Vector2( 531.505, 280.968 )
 color = Color( 0.776471, 0.152941, 0.152941, 1 )
 polygon = PoolVector2Array( 2, -24.5, 23.5, -19.5, 30, -5, 24.5, 19.5, 4, 28, -16, 24.5, -27, 9, -20.5, -15.5 )
+
+[node name="Ships" type="Particles2D" parent="."]
+emitting = false
+amount = 100
+lifetime = 600.0
+explosiveness = 1.0
+process_material = SubResource( 2 )
+texture = ExtResource( 2 )

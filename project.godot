@@ -25,6 +25,5 @@ settings/stdout/print_fps=true
 
 [rendering]
 
-quality/driver/driver_name="GLES2"
 quality/intended_usage/framebuffer_allocation=1
 environment/default_environment="res://default_env.tres"
